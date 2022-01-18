@@ -13,7 +13,6 @@
 
 // Put your code here.
 (LOOP)
-    @LOOP
     @SCREEN
     D=A
     @position
