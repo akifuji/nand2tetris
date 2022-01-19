@@ -28,4 +28,22 @@ CHIP Memory {
 
     PARTS:
     // Put your code here:
+    // isscreen=address[14]
+    And(a=address[13],b=address[14],out=iskeyboard);
+    Or8Way(in=address[0..7],out=w1);
+    Or8Way(in[0..4]=address[8..12],out=w2);
+    Or(a=w1,b=w2,out=w3);
+    And(a=iskeyboard,b=w3,out=isinvalid);
+
+    And(a=address[14],b=load,out=isscreenload);
+    Screen(in=in,load=isscreenload,address=address[0..12],out=screenout);
+    Keyboard(out=keyboardout);
+
+    Not(in=address[14],out=ismemory);
+    And(a=ismemory,b=load,out=ismemoryload);
+    RAM16K(in=in,load=ismemoryload,address=address[0..13],out=memoryout);
+
+    Mux16(a=memoryout,b=screenout,sel=address[14],out=out1);
+    Mux16(a=out1,b=keyboardout,sel=iskeyboard,out=out2);
+    Mux16(a=out2,b=false,sel=isinvalid,out=out);  
 }
