@@ -40,4 +40,31 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
-}
+    // isCinstruction = instruction[15]   
+    And(a=instruction[15],b=instruction[5],out=writeA);
+    Mux16(a[0..14]=instruction[0..14],b=fb,sel=writeA,out=inA);
+    Not(in=instruction[15],out=isAinstruction);
+    Or(a=writeA,b=isAinstruction,out=isAloading);
+    ARegister(in=inA,load=isAloading,out=outA,out[0..14]=addressM);
+
+    Mux16(a=outA,b=inM,sel=instruction[12],out=aluinput);
+    
+    And(a=instruction[15],b=instruction[4],out=isDloading);
+    DRegister(in=fb,load=isDloading,out=outD);
+
+    ALU(x=outD,y=aluinput,zx=instruction[11],nx=instruction[10],zy=instruction[9],ny=instruction[8],f=instruction[7],no=instruction[6],out=outM,out=fb,zr=zr,ng=ng);    
+
+    And(a=instruction[15],b=instruction[3],out=writeM);
+    
+    Not(in=ng,out=notng);
+    Not(in=zr,out=notzr);
+    And(a=notng,b=notzr,out=pl);
+    And(a=instruction[0],b=pl,out=j3);
+    And(a=instruction[1],b=zr,out=j2);
+    And(a=instruction[2],b=ng,out=j1);
+    Or(a=j3,b=j2,out=k1);
+    Or(a=k1,b=j1,out=k2);
+    And(a=k2,b=instruction[15],out=isPCloading);
+    Not(in=isPCloading,out=isnotPCloading);
+    PC(in=outA,load=isPCloading,inc=isnotPCloading,reset=reset,out[0..14]=pc);
+}   
