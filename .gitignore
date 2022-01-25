@@ -1,2 +1,5 @@
 *.dat
 *.out
+.idea
+__pycache__
+venv
