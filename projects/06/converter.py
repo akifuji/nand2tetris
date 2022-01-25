@@ -1,4 +1,4 @@
-class Code:
+class Converter:
     @staticmethod
     def number(num_str):
         binary = ""
@@ -11,7 +11,7 @@ class Code:
 
     @staticmethod
     def dest(mnemonic) -> str:
-        if mnemonic == "null":
+        if mnemonic == "null" or mnemonic == "0":
             return "000"
         elif mnemonic == "M":
             return "001"
@@ -30,7 +30,9 @@ class Code:
 
     @staticmethod
     def comp(mnemonic) -> str:
-        if mnemonic == "0":
+        if mnemonic == "null":
+            return "0000000"
+        elif mnemonic == "0":
             return "0101010"
         elif mnemonic == "1":
             return "0111111"
@@ -51,7 +53,7 @@ class Code:
         elif mnemonic == "D+1":
             return "0011111"
         elif mnemonic == "A+1":
-            return "01101111"
+            return "0110111"
         elif mnemonic == "D-1":
             return "0001110"
         elif mnemonic == "A-1":

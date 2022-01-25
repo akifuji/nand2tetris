@@ -13,9 +13,10 @@ class CommandType(Enum):
 
 class Parser:
     def __init__(self):
-        self.file_path = sys.argv[0]
+        self.file_path = sys.argv[1]
         file_name = self.file_path.split("/")[-1]
-        open(file_name, "w")
+        self.output_file = file_name.split(".")[0] + ".hack"
+        open(self.output_file, "w")
         self.symbol_table = SymbolTable()
 
     def resolve_symbol(self):
@@ -31,7 +32,6 @@ class Parser:
                     self.symbol_table.add_entry(symbol, line_num)
                     continue
                 line_num += 1
-
 
     def parse(self):
         with open(self.file_path) as f:
@@ -61,7 +61,7 @@ class Parser:
                 self.add(parsed + "\n")
 
     def add(self, line):
-        with open(self.file_name, "a") as f:
+        with open(self.output_file, "a") as f:
             f.write(line)
 
     @staticmethod
