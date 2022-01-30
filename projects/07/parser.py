@@ -8,7 +8,7 @@ ARITHMETIC_COMMAND = ["add", "sub", "neg", "eq", "gt", "lt", "and", "or", "not"]
 class Parser:
     def __init__(self):
         #self.file_path = sys.argv[1]
-        self.read_file_path = "MemoryAccess/BasicTest/BasicTest.vm"
+        self.read_file_path = "MemoryAccess/PointerTest/PointerTest.vm"
         file_paths = self.read_file_path.split("/")
         output_file_name = file_paths[-1]
         file_paths[-1] = output_file_name

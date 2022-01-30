@@ -118,7 +118,8 @@ class CodeWriter:
             asm += "D=A\n"
         else:
             asm += "@{}\n".format(base_point)
-            asm += "A=M\n"
+            if memory_segment != "pointer":
+                asm += "A=M\n"
             for i in range(0, int(number)):
                 asm += "A=A+1\n"
             asm += "D=M\n"
@@ -136,7 +137,8 @@ class CodeWriter:
         asm += "A=M-1\n"
         asm += "D=M\n"
         asm += "@{}\n".format(base_point)
-        asm += "A=M\n"
+        if memory_segment != "pointer" and memory_segment != "temp":
+            asm += "A=M\n"
         for i in range(0, int(number)):
             asm += "A=A+1\n"
         asm += "M=D\n"
@@ -157,3 +159,5 @@ class CodeWriter:
             return "THAT"
         elif memory_segment == "temp":
             return "R5"
+        elif memory_segment == "pointer":
+            return "R3"
