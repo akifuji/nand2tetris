@@ -103,13 +103,57 @@ class CodeWriter:
     @staticmethod
     def convert_push_pop(args) -> str:
         asm = ""
-        if args[0] == "push":
-            if args[1] == "constant":
-                asm += "@{}\n".format(args[2])
-                asm += "D=A\n"
-                asm += "@SP\n"
-                asm += "A=M\n"
-                asm += "M=D\n"
-                asm += "@SP\n"
-                asm += "M=M+1\n"
+        (command, memory_segment, number) = (args[0], args[1], args[2])
+        if command == "push":
+            asm = CodeWriter.push(asm, memory_segment, number)
+        if command == "pop":
+            asm = CodeWriter.pop(asm, memory_segment, number)
         return asm
+
+    @staticmethod
+    def push(asm, memory_segment, number) -> str:
+        base_point = CodeWriter.get_base_point(memory_segment)
+        if memory_segment == "constant":
+            asm += "@{}\n".format(number)
+            asm += "D=A\n"
+        else:
+            asm += "@{}\n".format(base_point)
+            asm += "A=M\n"
+            for i in range(0, int(number)):
+                asm += "A=A+1\n"
+            asm += "D=M\n"
+        asm += "@SP\n"
+        asm += "A=M\n"
+        asm += "M=D\n"
+        asm += "@SP\n"
+        asm += "M=M+1\n"
+        return asm
+
+    @staticmethod
+    def pop(asm, memory_segment, number) -> str:
+        base_point = CodeWriter.get_base_point(memory_segment)
+        asm += "@SP\n"
+        asm += "A=M-1\n"
+        asm += "D=M\n"
+        asm += "@{}\n".format(base_point)
+        asm += "A=M\n"
+        for i in range(0, int(number)):
+            asm += "A=A+1\n"
+        asm += "M=D\n"
+        asm = CodeWriter.decrease_stack_pointer(asm)
+        return asm
+
+    @staticmethod
+    def get_base_point(memory_segment) -> str:
+        if memory_segment == "constant":
+            return "SP"
+        elif memory_segment == "local":
+            return "LCL"
+        elif memory_segment == "argument":
+            return "ARG"
+        elif memory_segment == "this":
+            return "THIS"
+        elif memory_segment == "that":
+            return "THAT"
+        elif memory_segment == "temp":
+            return "R5"
