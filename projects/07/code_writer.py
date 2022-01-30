@@ -15,6 +15,7 @@ class CommandType(Enum):
 
 class CodeWriter:
     def __init__(self, file_name):
+        self.file_name = file_name.split("/")[-1].replace(".vm", "")
         self.output_file = file_name.split(".")[0] + ".asm"
         self.label = 0
         open(self.output_file, "w")
@@ -100,28 +101,29 @@ class CodeWriter:
         self.label += 1
         return asm
 
-    @staticmethod
-    def convert_push_pop(args) -> str:
+    def convert_push_pop(self, args) -> str:
         asm = ""
         (command, memory_segment, number) = (args[0], args[1], args[2])
         if command == "push":
-            asm = CodeWriter.push(asm, memory_segment, number)
+            asm = self.push(asm, memory_segment, number)
         if command == "pop":
-            asm = CodeWriter.pop(asm, memory_segment, number)
+            asm = self.pop(asm, memory_segment, number)
         return asm
 
-    @staticmethod
-    def push(asm, memory_segment, number) -> str:
+    def push(self, asm, memory_segment, number) -> str:
         base_point = CodeWriter.get_base_point(memory_segment)
         if memory_segment == "constant":
             asm += "@{}\n".format(number)
             asm += "D=A\n"
         else:
-            asm += "@{}\n".format(base_point)
-            if memory_segment != "pointer":
-                asm += "A=M\n"
-            for i in range(0, int(number)):
-                asm += "A=A+1\n"
+            if memory_segment == "static":
+                asm += "@{}.{}\n".format(self.file_name, number)
+            else:
+                asm += "@{}\n".format(base_point)
+                if memory_segment != "pointer":
+                    asm += "A=M\n"
+                for i in range(0, int(number)):
+                    asm += "A=A+1\n"
             asm += "D=M\n"
         asm += "@SP\n"
         asm += "A=M\n"
@@ -130,17 +132,19 @@ class CodeWriter:
         asm += "M=M+1\n"
         return asm
 
-    @staticmethod
-    def pop(asm, memory_segment, number) -> str:
+    def pop(self, asm, memory_segment, number) -> str:
         base_point = CodeWriter.get_base_point(memory_segment)
         asm += "@SP\n"
         asm += "A=M-1\n"
         asm += "D=M\n"
-        asm += "@{}\n".format(base_point)
-        if memory_segment != "pointer" and memory_segment != "temp":
-            asm += "A=M\n"
-        for i in range(0, int(number)):
-            asm += "A=A+1\n"
+        if memory_segment == "static":
+            asm += "@{}.{}\n".format(self.file_name, number)
+        else:
+            asm += "@{}\n".format(base_point)
+            if memory_segment != "pointer" and memory_segment != "temp":
+                asm += "A=M\n"
+            for i in range(0, int(number)):
+                asm += "A=A+1\n"
         asm += "M=D\n"
         asm = CodeWriter.decrease_stack_pointer(asm)
         return asm
