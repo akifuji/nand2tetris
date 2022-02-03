@@ -37,6 +37,10 @@ class CodeWriter:
             converted = self.convert_goto(args)
         elif command_type == CommandType.C_IF:
             converted = self.convert_if(args)
+        elif command_type == CommandType.C_FUNCTION:
+            converted = self.convert_function(args)
+        elif command_type == CommandType.C_RETURN:
+            converted = self.convert_return(args)
         return converted
 
     def convert_arithmetic(self, args) -> str:
@@ -195,4 +199,66 @@ class CodeWriter:
         asm += "D=M\n"
         asm += "@{}\n".format(label)
         asm += "D;JNE\n"
+        return asm
+
+    @staticmethod
+    def convert_function(args) -> str:
+        label = args[1]
+        local_n = args[2]
+        asm = ""
+        asm += "({})\n".format(label)
+        asm += "@SP\n"
+        asm += "A=M\n"
+        for _ in (0, local_n):
+            asm += "M=0\n"
+            asm += "A=A+1\n"
+        asm += "D=A\n"
+        asm += "@SP\n"
+        asm += "M=D\n"
+        return asm
+
+
+    def convert_return(self, args) -> str:
+        asm = ""
+
+        asm += "@SP\n"
+        asm += "A=M-1\n"
+        asm += "D=M\n"
+        asm += "@ARG\n"
+        asm += "A=M\n"
+        asm += "M=D\n"
+        asm += "@ARG\n"
+        asm += "D=M+1\n"
+        asm += "@SP\n"
+        asm += "M=D\n"
+
+        asm += "@LCL\n"
+        asm += "A=M\n"
+        for _ in range(0, 5):
+            asm += "A=A-1\n"
+        asm += "D=M\n"
+        asm += "@SP\n"
+        asm += "A=M\n"
+        asm += "M=D\n"
+
+        for i in range(0, 4):
+            asm += "@LCL\n"
+            asm += "A=M\n"
+            for _ in range(0, i+1):
+                asm += "A=A-1\n"
+            asm += "D=M\n"
+            if i == 0:
+                asm += "@THAT\n"
+            elif i == 1:
+                asm += "@THIS\n"
+            elif i == 2:
+                asm += "@ARG\n"
+            elif i == 3:
+                asm += "@LCL\n"
+            asm += "M=D\n"
+
+        asm += "@SP\n"
+        asm += "A=M\n"
+        asm += "0;JMP\n"
+
         return asm
