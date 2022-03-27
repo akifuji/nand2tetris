@@ -1,0 +1,63 @@
+##!/usr/local/bin/zsh
+export RUSTFLAGS=-Awarnings
+set -e
+alias CPUEmulator="~/dev/nand2tetris/tools/CPUEmulator.sh"
+
+# Chapter 7
+## SimpleAdd.vm (file_name)
+python parser.py ~/dev/nand2tetris/projects/07/StackArithmetic/SimpleAdd/SimpleAdd.vm
+CPUEmulator ~/dev/nand2tetris/projects/07/StackArithmetic/SimpleAdd/SimpleAdd.tst
+rm ~/dev/nand2tetris/projects/07/StackArithmetic/SimpleAdd/SimpleAdd.asm
+
+## StackTest.vm (file_name)
+python parser.py ~/dev/nand2tetris/projects/07/StackArithmetic/StackTest/StackTest.vm
+CPUEmulator ~/dev/nand2tetris/projects/07/StackArithmetic/StackTest/StackTest.tst
+rm ~/dev/nand2tetris/projects/07/StackArithmetic/StackTest/StackTest.asm
+
+## BasicTest.vm (file_name)
+python parser.py ~/dev/nand2tetris/projects/07/MemoryAccess/BasicTest/BasicTest.vm
+CPUEmulator ~/dev/nand2tetris/projects/07/MemoryAccess/BasicTest/BasicTest.tst
+rm ~/dev/nand2tetris/projects/07/MemoryAccess/BasicTest/BasicTest.asm
+
+## StaticTest.vm (file_name)
+python parser.py ~/dev/nand2tetris/projects/07/MemoryAccess/StaticTest/StaticTest.vm
+CPUEmulator ~/dev/nand2tetris/projects/07/MemoryAccess/StaticTest/StaticTest.tst
+rm ~/dev/nand2tetris/projects/07/MemoryAccess/StaticTest/StaticTest.asm
+
+## PointerTest.vm (file_name)
+python parser.py ~/dev/nand2tetris/projects/07/MemoryAccess/PointerTest/PointerTest.vm
+CPUEmulator ~/dev/nand2tetris/projects/07/MemoryAccess/PointerTest/PointerTest.tst
+rm ~/dev/nand2tetris/projects/07/MemoryAccess/PointerTest/PointerTest.asm
+
+# Chapter 8
+## BasicLoop.vm (file_name)
+python parser.py ~/dev/nand2tetris/projects/08/ProgramFlow/BasicLoop/Basicloop.vm
+CPUEmulator ~/dev/nand2tetris/projects/08/ProgramFlow/BasicLoop/BasicLoop.tst
+rm ~/dev/nand2tetris/projects/08/ProgramFlow/BasicLoop/BasicLoop.asm
+
+## FibonacciSeries.vm (file_name)
+python parser.py ~/dev/nand2tetris/projects/08/ProgramFlow/FibonacciSeries/FibonacciSeries.vm
+CPUEmulator ~/dev/nand2tetris/projects/08/ProgramFlow/FibonacciSeries/FibonacciSeries.tst
+rm ~/dev/nand2tetris/projects/08/ProgramFlow/FibonacciSeries/FibonacciSeries.asm
+
+## SimpleFunction.vm (file_name)
+python parser.py ~/dev/nand2tetris/projects/08/FunctionCalls/SimpleFunction/SimpleFunction.vm
+CPUEmulator ~/dev/nand2tetris/projects/08/FunctionCalls/SimpleFunction/SimpleFunction.tst
+rm ~/dev/nand2tetris/projects/08/FunctionCalls/SimpleFunction/SimpleFunction.asm
+
+## FibonacciElement (dir_name)
+python parser.py ~/dev/nand2tetris/projects/08/FunctionCalls/FibonacciElement
+CPUEmulator ~/dev/nand2tetris/projects/08/FunctionCalls/FibonacciElement/FibonacciElement.tst
+rm ~/dev/nand2tetris/projects/08/FunctionCalls/FibonacciElement/FibonacciElement.asm
+
+## StaticsTest (dir_name)
+python parser.py ~/dev/nand2tetris/projects/08/FunctionCalls/StaticsTest
+CPUEmulator ~/dev/nand2tetris/projects/08/FunctionCalls/StaticsTest/StaticsTest.tst
+rm ~/dev/nand2tetris/projects/08/FunctionCalls/StaticsTest/*.asm
+
+## NestedCall (dir_name)
+python parser.py ~/dev/nand2tetris/projects/08/FunctionCalls/NestedCall
+CPUEmulator ~/dev/nand2tetris/projects/08/FunctionCalls/NestedCall/NestedCall.tst
+rm ~/dev/nand2tetris/projects/08/FunctionCalls/NestedCall/NestedCall.asm
+
+echo Success

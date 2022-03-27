@@ -14,19 +14,22 @@ class CommandType(Enum):
 
 
 class CodeWriter:
-    def __init__(self, file_name):
-        self.file_name = file_name.split("/")[-1].replace(".vm", "")
-        self.output_file = file_name.split(".")[0] + ".asm"
+    def __init__(self, output_path, sys_init=False):
+        self.directory_name = output_path.split("/")[-1]
+        self.output_file = output_path + "/" + self.directory_name + ".asm"
         self.label = 0
         open(self.output_file, "w")
+        self.write_init(sys_init)
+        self.file_name = ""
 
     def write(self, line):
         with open(self.output_file, "a") as f:
             f.write(line)
 
-    def convert(self, line, command_type) -> str:
+    def convert(self, line, command_type, file_name="") -> str:
         args = line.split()
         converted = ""
+        self.file_name = file_name
         if command_type == CommandType.C_ARITHMETIC:
             converted = self.convert_arithmetic(args)
         elif command_type == CommandType.C_PUSH or command_type == CommandType.C_POP:
@@ -40,7 +43,9 @@ class CodeWriter:
         elif command_type == CommandType.C_FUNCTION:
             converted = self.convert_function(args)
         elif command_type == CommandType.C_RETURN:
-            converted = self.convert_return(args)
+            converted = self.convert_return()
+        elif command_type == CommandType.C_CALL:
+            converted = self.convert_call(args)
         return converted
 
     def convert_arithmetic(self, args) -> str:
@@ -130,7 +135,7 @@ class CodeWriter:
                 asm += "@{}.{}\n".format(self.file_name, number)
             else:
                 asm += "@{}\n".format(base_point)
-                if memory_segment != "pointer":
+                if memory_segment != "pointer" and memory_segment != "temp":
                     asm += "A=M\n"
                 for i in range(0, int(number)):
                     asm += "A=A+1\n"
@@ -204,48 +209,49 @@ class CodeWriter:
     @staticmethod
     def convert_function(args) -> str:
         label = args[1]
-        local_n = args[2]
+        local_n = int(args[2])
         asm = ""
         asm += "({})\n".format(label)
-        asm += "@SP\n"
-        asm += "A=M\n"
-        for _ in (0, local_n):
+        for _ in range(0, local_n):
+            asm += "@SP\n"
+            asm += "A=M\n"
             asm += "M=0\n"
-            asm += "A=A+1\n"
-        asm += "D=A\n"
-        asm += "@SP\n"
-        asm += "M=D\n"
+            asm += "@SP\n"
+            asm += "M=M+1\n"
         return asm
 
-
-    def convert_return(self, args) -> str:
+    @staticmethod
+    def convert_return() -> str:
         asm = ""
+        asm += "@LCL\n"
+        asm += "D=M\n"
+        asm += "@R13\n"
+        asm += "M=D\n"
+
+        asm += "@5\n"
+        asm += "A=D-A\n"
+        asm += "D=M\n"
+        asm += "@R14\n"
+        asm += "M=D\n"
 
         asm += "@SP\n"
-        asm += "A=M-1\n"
+        asm += "M=M-1\n"
+        asm += "A=M\n"
         asm += "D=M\n"
+        asm += "M=0\n"
         asm += "@ARG\n"
         asm += "A=M\n"
         asm += "M=D\n"
+
         asm += "@ARG\n"
         asm += "D=M+1\n"
         asm += "@SP\n"
         asm += "M=D\n"
 
-        asm += "@LCL\n"
-        asm += "A=M\n"
-        for _ in range(0, 5):
-            asm += "A=A-1\n"
-        asm += "D=M\n"
-        asm += "@SP\n"
-        asm += "A=M\n"
-        asm += "M=D\n"
-
         for i in range(0, 4):
-            asm += "@LCL\n"
+            asm += "@R13\n"
+            asm += "M=M-1\n"
             asm += "A=M\n"
-            for _ in range(0, i+1):
-                asm += "A=A-1\n"
             asm += "D=M\n"
             if i == 0:
                 asm += "@THAT\n"
@@ -257,8 +263,63 @@ class CodeWriter:
                 asm += "@LCL\n"
             asm += "M=D\n"
 
-        asm += "@SP\n"
+        asm += "@R14\n"
         asm += "A=M\n"
         asm += "0;JMP\n"
 
         return asm
+
+    def convert_call(self, args) -> str:
+        function_name = args[1]
+        n_args = int(args[2])
+        self.label += 1
+        return_address = "retAddr_{}".format(self.label)
+        asm = ""
+        for i in range(0, 5):
+            if i == 0:
+                asm += "@{}\n".format(return_address)
+                asm += "D=A\n"
+            else:
+                if i == 1:
+                    asm += "@LCL\n"
+                elif i == 2:
+                    asm += "@ARG\n"
+                elif i == 3:
+                    asm += "@THIS\n"
+                elif i == 4:
+                    asm += "@THAT\n"
+                asm += "D=M\n"
+            asm += "@SP\n"
+            asm += "A=M\n"
+            asm += "M=D\n"
+            asm += "@SP\n"
+            asm += "M=M+1\n"
+
+        asm += "@SP\n"
+        asm += "D=M\n"
+        asm += "@{}\n".format(n_args + 5)
+        asm += "D=D-A\n"
+        asm += "@ARG\n"
+        asm += "M=D\n"
+
+        asm += "@SP\n"
+        asm += "D=M\n"
+        asm += "@LCL\n"
+        asm += "M=D\n"
+
+        asm += "@{}\n".format(function_name)
+        asm += "0;JMP\n"
+
+        asm += "({})\n".format(return_address)
+
+        return asm
+
+    def write_init(self, sys_init=False):
+        asm = ""
+        asm += "@256\n"
+        asm += "D=A\n"
+        asm += "@SP\n"
+        asm += "M=D\n"
+        if sys_init:
+            asm += self.convert_call(["", "Sys.init", "0"])
+        self.write(asm)
